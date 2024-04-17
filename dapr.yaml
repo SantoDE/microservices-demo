@@ -1,0 +1,103 @@
+version: 1
+apps:
+  - appID: frontend
+    appDirPath: ./src/frontend
+    appPort: 8080
+    containerImage: santode/microservices-demo-frontend:v0.9.0-dapr
+    createService: true
+    env:
+      PRODUCT_CATALOG_SERVICE_ADDR: localhost:50001
+      AD_SERVICE_ADDR: localhost:50001
+      CART_SERVICE_ADDR: localhost:50001
+      CHECKOUT_SERVICE_ADDR: localhost:50001
+      CURRENCY_SERVICE_ADDR: localhost:50001
+      SHIPPING_SERVICE_ADDR: localhost:50001
+      RECOMMENDATION_SERVICE_ADDR: localhost:50001
+      SHOPPING_ASSISTANT_SERVICE_ADDR: localhost:50001
+      ENABLE_TRACING: 0
+      DISABLE_PROFILER: 1
+  - appID: productcatalogservice
+    appDirPath: ./src/productcatalogservice
+    appPort: 3550
+    containerImage: gcr.io/google-samples/microservices-demo/productcatalogservice:v0.9.0
+    createService: true
+    env:
+      DISABLE_PROFILER: 1
+  - appID: adservice
+    appDirPath: ./src/adservice
+    appPort: 9555
+    appProtocol: grpc
+    containerImage: gcr.io/google-samples/microservices-demo/adservice:v0.9.0
+    createService: true
+    env:
+      DISABLE_PROFILER: 1
+  - appID: cartservice
+    appDirPath: ./src/cartservice
+    appPort: 7070
+    appProtocol: grpc
+    containerImage: gcr.io/google-samples/microservices-demo/cartservice:v0.9.0
+    createService: true
+    env:
+      PORT: 7070
+      DISABLE_PROFILER: 1
+  - appID: checkoutservice
+    appDirPath: ./src/checkoutservice
+    appPort: 5050
+    appProtocol: grpc
+    containerImage: santode/microservices-demo-checkoutservice:v0.9.0-dapr
+    createService: true
+    env:
+      PORT: 5050
+      EMAIL_SERVICE_ADDR: localhost:50001
+      PAYMENT_SERVICE_ADDR: localhost:50001
+      CURRENCY_SERVICE_ADDR: localhost:50001
+      SHIPPING_SERVICE_ADDR: localhost:50001
+      CART_SERVICE_ADDR: localhost:50001
+      PRODUCT_CATALOG_SERVICE_ADDR: localhost:50001
+      DISABLE_PROFILER: 1
+  - appID: currencyservice
+    appDirPath: ./src/currencyservice
+    appPort: 7000
+    appProtocol: grpc
+    containerImage: gcr.io/google-samples/microservices-demo/currencyservice:v0.9.0
+    createService: true
+    env:
+      DISABLE_PROFILER: 1
+      PORT: 7000
+  - appID: emailservice
+    appDirPath: ./src/emailservice
+    appPort: 8080
+    appProtocol: grpc
+    containerImage: gcr.io/google-samples/microservices-demo/emailservice:v0.9.0
+    createService: true
+    env:
+      PORT: 8080
+      DISABLE_PROFILER: 1
+  - appID: paymentservice
+    appDirPath: ./src/paymentservice
+    appPort: 50051
+    appProtocol: grpc
+    containerImage: gcr.io/google-samples/microservices-demo/paymentservice:v0.9.0
+    createService: true
+    env:
+      PORT: 50051
+      DISABLE_PROFILER: 1
+  - appID: recommendationservice
+    appDirPath: ./src/recommendationservice
+    appPort: 8080
+    appProtocol: grpc
+    containerImage: gcr.io/google-samples/microservices-demo/recommendationservice:v0.9.0
+    createService: true
+    env:
+      PRODUCT_CATALOG_SERVICE_ADDR: localhost:50001
+      PORT: 8080
+      DISABLE_PROFILER: 1
+  - appID: shippingservice
+    appDirPath: ./src/shippingservice
+    appPort: 50051
+    appProtocol: grpc
+    containerImage: gcr.io/google-samples/microservices-demo/shippingservice:v0.9.0
+    createService: true
+    env:
+      PORT: 50051
+      DISABLE_PROFILER: 1

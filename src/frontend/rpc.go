@@ -16,6 +16,7 @@ package main
 
 import (
 	"context"
+	"google.golang.org/grpc/metadata"
 	"time"
 
 	pb "github.com/GoogleCloudPlatform/microservices-demo/src/frontend/genproto"
@@ -28,6 +29,7 @@ const (
 )
 
 func (fe *frontendServer) getCurrencies(ctx context.Context) ([]string, error) {
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "currencyservice")
 	currs, err := pb.NewCurrencyServiceClient(fe.currencySvcConn).
 		GetSupportedCurrencies(ctx, &pb.Empty{})
 	if err != nil {
@@ -43,28 +45,33 @@ func (fe *frontendServer) getCurrencies(ctx context.Context) ([]string, error) {
 }
 
 func (fe *frontendServer) getProducts(ctx context.Context) ([]*pb.Product, error) {
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "productcatalogservice")
 	resp, err := pb.NewProductCatalogServiceClient(fe.productCatalogSvcConn).
 		ListProducts(ctx, &pb.Empty{})
 	return resp.GetProducts(), err
 }
 
 func (fe *frontendServer) getProduct(ctx context.Context, id string) (*pb.Product, error) {
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "productcatalogservice")
 	resp, err := pb.NewProductCatalogServiceClient(fe.productCatalogSvcConn).
 		GetProduct(ctx, &pb.GetProductRequest{Id: id})
 	return resp, err
 }
 
 func (fe *frontendServer) getCart(ctx context.Context, userID string) ([]*pb.CartItem, error) {
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "cartservice")
 	resp, err := pb.NewCartServiceClient(fe.cartSvcConn).GetCart(ctx, &pb.GetCartRequest{UserId: userID})
 	return resp.GetItems(), err
 }
 
 func (fe *frontendServer) emptyCart(ctx context.Context, userID string) error {
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "cartservice")
 	_, err := pb.NewCartServiceClient(fe.cartSvcConn).EmptyCart(ctx, &pb.EmptyCartRequest{UserId: userID})
 	return err
 }
 
 func (fe *frontendServer) insertCart(ctx context.Context, userID, productID string, quantity int32) error {
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "cartservice")
 	_, err := pb.NewCartServiceClient(fe.cartSvcConn).AddItem(ctx, &pb.AddItemRequest{
 		UserId: userID,
 		Item: &pb.CartItem{
@@ -78,6 +85,7 @@ func (fe *frontendServer) convertCurrency(ctx context.Context, money *pb.Money, 
 	if avoidNoopCurrencyConversionRPC && money.GetCurrencyCode() == currency {
 		return money, nil
 	}
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "currencyservice")
 	return pb.NewCurrencyServiceClient(fe.currencySvcConn).
 		Convert(ctx, &pb.CurrencyConversionRequest{
 			From:   money,
@@ -85,6 +93,8 @@ func (fe *frontendServer) convertCurrency(ctx context.Context, money *pb.Money, 
 }
 
 func (fe *frontendServer) getShippingQuote(ctx context.Context, items []*pb.CartItem, currency string) (*pb.Money, error) {
+	ctxOriginal := ctx
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "shippingservice")
 	quote, err := pb.NewShippingServiceClient(fe.shippingSvcConn).GetQuote(ctx,
 		&pb.GetQuoteRequest{
 			Address: nil,
@@ -92,11 +102,12 @@ func (fe *frontendServer) getShippingQuote(ctx context.Context, items []*pb.Cart
 	if err != nil {
 		return nil, err
 	}
-	localized, err := fe.convertCurrency(ctx, quote.GetCostUsd(), currency)
+	localized, err := fe.convertCurrency(ctxOriginal, quote.GetCostUsd(), currency)
 	return localized, errors.Wrap(err, "failed to convert currency for shipping cost")
 }
 
 func (fe *frontendServer) getRecommendations(ctx context.Context, userID string, productIDs []string) ([]*pb.Product, error) {
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "recommendationservice")
 	resp, err := pb.NewRecommendationServiceClient(fe.recommendationSvcConn).ListRecommendations(ctx,
 		&pb.ListRecommendationsRequest{UserId: userID, ProductIds: productIDs})
 	if err != nil {
@@ -117,6 +128,7 @@ func (fe *frontendServer) getRecommendations(ctx context.Context, userID string,
 }
 
 func (fe *frontendServer) getAd(ctx context.Context, ctxKeys []string) ([]*pb.Ad, error) {
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "adservice")
 	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*100)
 	defer cancel()
 

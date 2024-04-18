@@ -16,6 +16,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -33,6 +34,7 @@ import (
 	money "github.com/GoogleCloudPlatform/microservices-demo/src/checkoutservice/money"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
+	dapr "github.com/dapr/go-sdk/client"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -267,6 +269,31 @@ func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderReq
 		Items:              prep.orderItems,
 	}
 
+	client, err := dapr.NewClient()
+	if err != nil {
+		return nil, status.Errorf(codes.Unavailable, "Error initiating dapr: %+v", err)
+	}
+	defer client.Close()
+	type Message struct {
+		Email   string `json:"orderId"`
+		OrderId string `json:"email"`
+	}
+
+	message := Message{
+		Email:   req.Email,
+		OrderId: orderID.String(),
+	}
+
+	data, err := json.Marshal(message)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Unavailable, "Error marshalling to json: %+v", err)
+	}
+
+	if err = client.PublishEvent(ctx, "pubsub", "orders", data); err != nil {
+		return nil, status.Errorf(codes.Unavailable, "Error publishing: %+v", err)
+	}
+
 	if err := cs.sendOrderConfirmation(ctx, req.Email, orderResult); err != nil {
 		log.Warnf("failed to send order confirmation to %q: %+v", req.Email, err)
 	} else {
@@ -319,6 +346,7 @@ func (cs *checkoutService) quoteShipping(ctx context.Context, address *pb.Addres
 }
 
 func (cs *checkoutService) getUserCart(ctx context.Context, userID string) ([]*pb.CartItem, error) {
+	
 	cart, err := pb.NewCartServiceClient(cs.cartSvcConn).GetCart(ctx, &pb.GetCartRequest{UserId: userID})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user cart during checkout: %+v", err)

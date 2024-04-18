@@ -36,6 +36,8 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
+from flask import Flask, request, jsonify
+
 import googlecloudprofiler
 
 from logger import getJSONLogger
@@ -47,6 +49,8 @@ env = Environment(
     autoescape=select_autoescape(['html', 'xml'])
 )
 template = env.get_template('confirmation.html')
+
+app = Flask("emailservice")
 
 class BaseEmailService(demo_pb2_grpc.EmailServiceServicer):
   def Check(self, request, context):
@@ -159,7 +163,25 @@ def initStackdriverProfiling():
       else:
         logger.warning("Could not initialize Stackdriver Profiler after retrying, giving up")
   return
-
+  
+@app.route('/orders', methods=['POST'])
+def send_email():
+  if request.is_json:
+      # Get JSON data from the request body
+      json_data = request.json
+      message = json_data.get('data', {})
+      # Process the JSON data
+      # For example, you can access specific fields like this:
+      order_id = message.get('orderId')
+      email = message.get('email')
+      # Perform further processing
+      # Return a response if necessary
+      logger.info(f"A request to send order confirmation email for order {order_id} to {email} has been received.")
+  else:
+      # Return an error response if the request does not contain JSON data
+      return jsonify({'message':"Invalid JSON data"}), 400
+      # Return a JSON response indicating success
+  return jsonify({'message': 'Email sent successfully'}), 200
 
 if __name__ == '__main__':
   logger.info('starting the email service in dummy mode.')
@@ -195,4 +217,5 @@ if __name__ == '__main__':
   except Exception as e:
       logger.warn(f"Exception on Cloud Trace setup: {traceback.format_exc()}, tracing disabled.") 
   
+  app.run(debug=True, port=8000)
   start(dummy_mode = True)

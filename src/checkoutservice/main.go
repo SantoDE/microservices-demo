@@ -82,6 +82,8 @@ type checkoutService struct {
 
 	paymentSvcAddr string
 	paymentSvcConn *grpc.ClientConn
+
+	client dapr.Client
 }
 
 func main() {
@@ -120,6 +122,16 @@ func main() {
 	mustConnGRPC(ctx, &svc.currencySvcConn, svc.currencySvcAddr)
 	mustConnGRPC(ctx, &svc.emailSvcConn, svc.emailSvcAddr)
 	mustConnGRPC(ctx, &svc.paymentSvcConn, svc.paymentSvcAddr)
+
+	client, err := dapr.NewClient()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer client.Close()
+
+	svc.client = client
 
 	log.Infof("service config: %+v", svc)
 
@@ -270,14 +282,9 @@ func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderReq
 		Items:              prep.orderItems,
 	}
 
-	client, err := dapr.NewClient()
-	if err != nil {
-		return nil, status.Errorf(codes.Unavailable, "Error initiating dapr: %+v", err)
-	}
-	defer client.Close()
 	type Message struct {
-		Email   string `json:"orderId"`
-		OrderId string `json:"email"`
+		Email   string `json:"email"`
+		OrderId string `json:"orderId"`
 	}
 
 	message := Message{
@@ -291,7 +298,7 @@ func (cs *checkoutService) PlaceOrder(ctx context.Context, req *pb.PlaceOrderReq
 		return nil, status.Errorf(codes.Unavailable, "Error marshalling to json: %+v", err)
 	}
 
-	if err = client.PublishEvent(ctx, "pubsub", "orders", data); err != nil {
+	if err = cs.client.PublishEvent(ctx, "pubsub", "orders", data, dapr.PublishEventWithContentType("application/json")); err != nil {
 		return nil, status.Errorf(codes.Unavailable, "Error publishing: %+v", err)
 	}
 

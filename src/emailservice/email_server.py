@@ -169,11 +169,9 @@ def send_email():
   if request.is_json:
       # Get JSON data from the request body
       json_data = request.json
-      message = json_data.get('data', {})
-      # Process the JSON data
-      # For example, you can access specific fields like this:
-      order_id = message.get('orderId')
-      email = message.get('email')
+      data = json_data.get('data')
+      email = data.get('email')
+      order_id = data.get('orderId')
       # Perform further processing
       # Return a response if necessary
       logger.info(f"A request to send order confirmation email for order {order_id} to {email} has been received.")

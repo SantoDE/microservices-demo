@@ -3,9 +3,9 @@
 # Declare variables to be passed into your templates.
 
 images:
-  repository: gcr.io/google-samples/microservices-demo
+  repository: santode/microservices-demo
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "7259163-dirty"
 
 serviceAccounts:
   # Specifies whether service accounts should be created.

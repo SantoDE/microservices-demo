@@ -22,34 +22,35 @@ build:
   # must provide a "default repo" using one of the methods described
   # here:
   # https://skaffold.dev/docs/concepts/#image-repository-handling
-  - image: emailservice
+  - image: santode/microservices-demo-emailservice
     context: src/emailservice
-  - image: productcatalogservice
+  - image: santode/microservices-demo-productcatalogservice
     context: src/productcatalogservice
-  - image: recommendationservice
+  - image: santode/microservices-demo-recommendationservice
     context: src/recommendationservice
-  - image: shoppingassistantservice
+  - image: santode/microservices-demo-shoppingassistantservice
     context: src/shoppingassistantservice
-  - image: shippingservice
+  - image: santode/microservices-demo-shippingservice
     context: src/shippingservice
-  - image: checkoutservice
+  - image: santode/microservices-demo-checkoutservice
     context: src/checkoutservice
-  - image: paymentservice
+  - image: santode/microservices-demo-paymentservice
     context: src/paymentservice
-  - image: currencyservice
+  - image: santode/microservices-demo-currencyservice
     context: src/currencyservice
-  - image: cartservice
+  - image: santode/microservices-demo-cartservice
     context: src/cartservice/src
     docker:
       dockerfile: Dockerfile
-  - image: frontend
+  - image: santode/microservices-demo-frontend
     context: src/frontend
-  - image: adservice
+  - image: santode/microservices-demo-adservice
     context: src/adservice
   tagPolicy:
     gitCommit: {}
   local:
     useBuildkit: false
+    push: true
 manifests:
   kustomize:
     paths:
@@ -100,8 +101,8 @@ requires:
   - app
 build:
   artifacts:
-  - image: loadgenerator
-    context: src/loadgenerator
+  #- image: loadgenerator
+    #context: src/loadgenerator
 manifests:
   rawYaml:
   - ./kubernetes-manifests/loadgenerator.yaml

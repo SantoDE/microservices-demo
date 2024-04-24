@@ -66,9 +66,9 @@ apps:
       PORT: 7000
   - appID: emailservice
     appDirPath: ./src/emailservice
-    appPort: 8080
+    appPort: 8000
     appProtocol: grpc
-    containerImage: gcr.io/google-samples/microservices-demo/emailservice:v0.9.0
+    containerImage: santode/microservices-demo-emailservice:v0.9.0-dapr
     createService: true
     env:
       PORT: 8080

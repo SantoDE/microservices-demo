@@ -7,3 +7,5 @@ spec:
   routes:
     default: /orders
   pubsubname: pubsub
+scopes:
+- emailservice

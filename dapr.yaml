@@ -1,4 +1,5 @@
 version: 1
+common:
 apps:
   - appID: frontend
     appDirPath: ./src/frontend
@@ -20,7 +21,7 @@ apps:
     appDirPath: ./src/productcatalogservice
     appPort: 3550
     containerImage: gcr.io/google-samples/microservices-demo/productcatalogservice:v0.9.0
-    createService: true
+    createService: false
     env:
       DISABLE_PROFILER: 1
   - appID: adservice
@@ -28,7 +29,7 @@ apps:
     appPort: 9555
     appProtocol: grpc
     containerImage: gcr.io/google-samples/microservices-demo/adservice:v0.9.0
-    createService: true
+    createService: false
     env:
       DISABLE_PROFILER: 1
   - appID: cartservice
@@ -36,7 +37,7 @@ apps:
     appPort: 7070
     appProtocol: grpc
     containerImage: gcr.io/google-samples/microservices-demo/cartservice:v0.9.0
-    createService: true
+    createService: false
     env:
       PORT: 7070
       DISABLE_PROFILER: 1
@@ -45,7 +46,7 @@ apps:
     appPort: 5050
     appProtocol: grpc
     containerImage: santode/microservices-demo-checkoutservice:v0.9.0-dapr
-    createService: true
+    createService: false
     env:
       PORT: 5050
       EMAIL_SERVICE_ADDR: localhost:50001
@@ -60,7 +61,7 @@ apps:
     appPort: 7000
     appProtocol: grpc
     containerImage: gcr.io/google-samples/microservices-demo/currencyservice:v0.9.0
-    createService: true
+    createService: false
     env:
       DISABLE_PROFILER: 1
       PORT: 7000
@@ -69,16 +70,17 @@ apps:
     appPort: 8000
     appProtocol: grpc
     containerImage: santode/microservices-demo-emailservice:v0.9.0-dapr
-    createService: true
+    resourcesPath: ./components
+    createService: false
     env:
-      PORT: 8080
+      PORT: 8000
       DISABLE_PROFILER: 1
   - appID: paymentservice
     appDirPath: ./src/paymentservice
     appPort: 50051
     appProtocol: grpc
     containerImage: gcr.io/google-samples/microservices-demo/paymentservice:v0.9.0
-    createService: true
+    createService: false
     env:
       PORT: 50051
       DISABLE_PROFILER: 1
@@ -87,7 +89,7 @@ apps:
     appPort: 8080
     appProtocol: grpc
     containerImage: gcr.io/google-samples/microservices-demo/recommendationservice:v0.9.0
-    createService: true
+    createService: false
     env:
       PRODUCT_CATALOG_SERVICE_ADDR: localhost:50001
       PORT: 8080
@@ -97,7 +99,7 @@ apps:
     appPort: 50051
     appProtocol: grpc
     containerImage: gcr.io/google-samples/microservices-demo/shippingservice:v0.9.0
-    createService: true
+    createService: false
     env:
       PORT: 50051
       DISABLE_PROFILER: 1
